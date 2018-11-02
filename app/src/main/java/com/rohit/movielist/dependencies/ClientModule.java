@@ -16,7 +16,7 @@ public class ClientModule {
         return new Retrofit.Builder()
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(okHttpClient)
-                .baseUrl("")
+                .baseUrl("https://api.themoviedb.org")
                 .build();
     }
 

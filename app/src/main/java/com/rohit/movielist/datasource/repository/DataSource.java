@@ -1,5 +1,6 @@
 package com.rohit.movielist.datasource.repository;
 
+import com.rohit.movielist.datasource.model.MovieDetail;
 import com.rohit.movielist.datasource.model.MoviesList;
 import com.rohit.movielist.dependencies.DaggerNetworkComponent;
 
@@ -16,8 +17,16 @@ public class DataSource implements DataSourceContract {
         DaggerNetworkComponent.builder().build().inject(this);
     }
 
+
     @Override
-    public Call<MoviesList> onFetchresult() {
+    public Call<MoviesList> onFetchResult() {
         return tmdbClient.getMovieList();
     }
+
+    @Override
+    public Call<MovieDetail> getMovieDetail(int id) {
+        return tmdbClient.getMovieDetail(id);
+    }
+
+
 }

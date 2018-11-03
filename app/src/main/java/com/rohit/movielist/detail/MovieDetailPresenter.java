@@ -1,57 +1,58 @@
-package com.rohit.movielist.home;
+package com.rohit.movielist.detail;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.view.View;
 
-import com.rohit.movielist.datasource.model.MoviesList;
-import com.rohit.movielist.datasource.model.Result;
+import com.rohit.movielist.datasource.model.MovieDetail;
 import com.rohit.movielist.datasource.repository.DataSourceContract;
 import com.rohit.movielist.utils.NetworkUtils;
-
-import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class HomePresenter implements HomeContract.Presenter {
+public class MovieDetailPresenter implements MovieDetailContract.Presenter {
 
-    private HomeContract.View mView;
+    private MovieDetailContract.View mView;
     private DataSourceContract mDataSourceContract;
     private Context mContext;
+    private int movieId;
 
-    public HomePresenter(HomeContract.View view, DataSourceContract dataSourceContract, Context context) {
-        this.mView = view;
-        this.mDataSourceContract = dataSourceContract;
-        this.mContext = context;
+    public MovieDetailPresenter(MovieDetailContract.View mView, DataSourceContract mDataSourceContract, Context mContext, int movieId) {
+        this.mView = mView;
+        this.mDataSourceContract = mDataSourceContract;
+        this.mContext = mContext;
+        this.movieId = movieId;
     }
 
     @Override
     public void onSnackbarRetry() {
-        fetchMovieList();
+        fetchMovieDetails(movieId);
         mView.updateProgressBar(View.VISIBLE);
     }
 
     @Override
     public void onStart() {
-        fetchMovieList();
+        fetchMovieDetails(movieId);
         mView.updateProgressBar(View.VISIBLE);
     }
 
-    private void fetchMovieList() {
-        mDataSourceContract.onFetchResult().enqueue(new Callback<MoviesList>() {
+    private void fetchMovieDetails(int id) {
+        mDataSourceContract.getMovieDetail(id).enqueue(new Callback<MovieDetail>() {
             @Override
-            public void onResponse(@NonNull Call<MoviesList> call, @NonNull Response<MoviesList> response) {
+            public void onResponse(@NonNull Call<MovieDetail> call, @NonNull Response<MovieDetail> response) {
                 if (response.body() != null) {
-                    List<Result> results = response.body().getResults();
-                    mView.showResult(results);
+                    mView.setMovieDetails(response.body());
+                }else{
+                    mView.showSnackBarMessage("Network Error! Please try again", true);
+
                 }
                 mView.updateProgressBar(View.GONE);
             }
 
             @Override
-            public void onFailure(@NonNull Call<MoviesList> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Call<MovieDetail> call, @NonNull Throwable t) {
                 if (!NetworkUtils.isInternetAvaialble(mContext)) {
                     mView.showSnackBarMessage("Internet not available", true);
                 } else {
@@ -62,8 +63,4 @@ public class HomePresenter implements HomeContract.Presenter {
         });
     }
 
-    @Override
-    public void onItemClick(int movieId,String movieName) {
-        mView.openDetailPage(movieId,movieName);
-    }
 }

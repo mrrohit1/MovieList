@@ -9,6 +9,8 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
@@ -17,6 +19,7 @@ import com.rohit.movielist.R;
 import com.rohit.movielist.base.BaseFragment;
 import com.rohit.movielist.datasource.model.Result;
 import com.rohit.movielist.datasource.repository.DataSource;
+import com.rohit.movielist.detail.MovieDetailFragment;
 
 import java.util.List;
 
@@ -52,6 +55,7 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements HomeCon
         mHomeAdapter = new HomeAdapter(mPresenter);
         recyclerViewMovieList.setLayoutManager(new LinearLayoutManager(mContext));
         recyclerViewMovieList.setAdapter(mHomeAdapter);
+        setHasOptionsMenu(true);
         return view;
     }
 
@@ -87,5 +91,16 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements HomeCon
     @Override
     public void showResult(List<Result> moviesLists) {
         mHomeAdapter.addMovies(moviesLists);
+    }
+
+    @Override
+    public void openDetailPage(int movieId, String movieName) {
+        getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.mainContainer, MovieDetailFragment.newInstance(movieId, mContext, movieName)).addToBackStack("").commit();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.main_menu, menu);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 }

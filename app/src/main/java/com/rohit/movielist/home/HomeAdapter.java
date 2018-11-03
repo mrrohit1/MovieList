@@ -59,7 +59,6 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.HomeViewHolder
         }
         if (!TextUtils.isEmpty(result.getReleaseDate())) {
             holder.textViewMovieDate.setText(DateUtils.convertDate(result.getReleaseDate()));
-            ;
         }
 
     }
@@ -89,6 +88,12 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.HomeViewHolder
         HomeViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    mPresenter.onItemClick(movieList.get(getAdapterPosition()).getId(),movieList.get(getAdapterPosition()).getTitle());
+                }
+            });
         }
     }
 

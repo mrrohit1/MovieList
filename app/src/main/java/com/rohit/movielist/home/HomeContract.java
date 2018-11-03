@@ -11,6 +11,7 @@ public interface HomeContract {
 
     interface Presenter extends BasePresenter {
 
+        void onItemClick(int movieId,String movieName);
 
     }
 
@@ -18,7 +19,7 @@ public interface HomeContract {
 
         void showResult(List<Result> moviesLists);
 
-
+        void openDetailPage(int movieId,String movieName);
 
     }
 

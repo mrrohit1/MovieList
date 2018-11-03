@@ -72,7 +72,7 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements HomeCon
     @Override
     public void showSnackBarMessage(String message, boolean hasRetry) {
         if (mSnackbar != null && mSnackbar.isShown()) {
-            return;
+            mSnackbar.dismiss();
         }
         int snackBarLength = hasRetry ? Snackbar.LENGTH_INDEFINITE : Snackbar.LENGTH_SHORT;
         mSnackbar = Snackbar.make(coordinatorLayout, message, snackBarLength);

@@ -1,11 +1,12 @@
 package com.rohit.movielist.detail;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.Group;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,12 +16,10 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.GlideException;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.Target;
 import com.rohit.movielist.MainActivity;
 import com.rohit.movielist.R;
 import com.rohit.movielist.base.BaseFragment;
+import com.rohit.movielist.constant.Constants;
 import com.rohit.movielist.datasource.model.Genre;
 import com.rohit.movielist.datasource.model.MovieDetail;
 import com.rohit.movielist.datasource.repository.DataSource;
@@ -66,12 +65,16 @@ public class MovieDetailFragment extends BaseFragment<MovieDetailPresenter> impl
     @BindView(R.id.groupDetailMovie)
     Group groupMovieDetails;
 
+    @BindView(R.id.coordinatorLayoutDetailMovie)
+    CoordinatorLayout coordinatorLayoutDetailMovie;
+
+    private Snackbar mSnackbar;
     private Context mContext;
 
     public static MovieDetailFragment newInstance(int movieId, Context context, String movieName) {
         Bundle args = new Bundle();
-        args.putInt("MOVIE_ID", movieId);
-        args.putString("MOVIE_NAME", movieName);
+        args.putInt(Constants.BundleId.MOVIE_ID, movieId);
+        args.putString(Constants.BundleId.MOVIE_NAME, movieName);
         MovieDetailFragment fragment = new MovieDetailFragment();
         fragment.mContext = context;
         fragment.setArguments(args);
@@ -84,7 +87,10 @@ public class MovieDetailFragment extends BaseFragment<MovieDetailPresenter> impl
         View view = inflater.inflate(R.layout.fragment_detail_movie, container, false);
         ButterKnife.bind(this, view);
         setHasOptionsMenu(true);
-        String toolbarName = getArguments().getString("MOVIE_NAME");
+        String toolbarName = null;
+        if (getArguments() != null) {
+            toolbarName = getArguments().getString(Constants.BundleId.MOVIE_NAME);
+        }
         ((MainActivity) getActivity()).getSupportActionBar().setTitle(toolbarName);
         ((MainActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         ((MainActivity) getActivity()).getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -104,7 +110,7 @@ public class MovieDetailFragment extends BaseFragment<MovieDetailPresenter> impl
     public MovieDetailPresenter createPresenter() {
         int id = 0;
         if (getArguments() != null) {
-            id = getArguments().getInt("MOVIE_ID");
+            id = getArguments().getInt(Constants.BundleId.MOVIE_ID);
         }
         return new MovieDetailPresenter(this, new DataSource(), mContext, id);
     }
@@ -116,7 +122,21 @@ public class MovieDetailFragment extends BaseFragment<MovieDetailPresenter> impl
 
     @Override
     public void showSnackBarMessage(String message, boolean hasRetry) {
-
+        if (mSnackbar != null && mSnackbar.isShown()) {
+            mSnackbar.dismiss();
+        }
+        int snackBarLength = hasRetry ? Snackbar.LENGTH_INDEFINITE : Snackbar.LENGTH_SHORT;
+        mSnackbar = Snackbar.make(coordinatorLayoutDetailMovie, message, snackBarLength);
+        if (hasRetry) {
+            mSnackbar.setAction("Retry", new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    mSnackbar.dismiss();
+                    mPresenter.onSnackbarRetry();
+                }
+            });
+        }
+        mSnackbar.show();
     }
 
     @Override
@@ -126,10 +146,10 @@ public class MovieDetailFragment extends BaseFragment<MovieDetailPresenter> impl
         textViewDetailLanguage.setText(movieDetails.getOriginalLanguage().toUpperCase());
         textViewDetailRating.setText(String.valueOf(movieDetails.getVoteAverage()));
         textViewDetailReleaseDate.setText(DateUtils.convertDate(movieDetails.getReleaseDate()));
-        textViewDetailRevenue.setText("$" + truncateNumber(movieDetails.getRevenue()));
-        textViewDetailBudget.setText("$" + truncateNumber(movieDetails.getBudget()));
+        textViewDetailRevenue.setText(String.valueOf("$").concat(truncateNumber(movieDetails.getRevenue())));
+        textViewDetailBudget.setText(String.valueOf("$").concat(truncateNumber(movieDetails.getBudget())));
         textViewDetailGenre.setText(getGenreName(movieDetails.genres));
-        String imageUrl = "https://image.tmdb.org/t/p/w300_and_h450_bestv2" + movieDetails.getBackdropPath();
+        String imageUrl = Constants.UrlConstant.IMAGE_BASE_URL.concat(movieDetails.getBackdropPath());
         Glide.with(mContext).load(imageUrl).into(imageViewDetailPoster);
 
     }
@@ -146,12 +166,11 @@ public class MovieDetailFragment extends BaseFragment<MovieDetailPresenter> impl
     public String truncateNumber(float floatNumber) {
         long million = 1000000L;
         long billion = 1000000000L;
-        long trillion = 1000000000000L;
         long number = Math.round(floatNumber);
         if ((number >= million) && (number < billion)) {
             float fraction = calculateFraction(number, million);
             return Float.toString(fraction) + "Million";
-        } else if ((number >= billion) && (number < trillion)) {
+        } else if (number >= billion) {
             float fraction = calculateFraction(number, billion);
             return Float.toString(fraction) + "Billion";
         }
@@ -160,8 +179,7 @@ public class MovieDetailFragment extends BaseFragment<MovieDetailPresenter> impl
 
     public float calculateFraction(long number, long divisor) {
         long truncate = (number * 10L + (divisor / 2L)) / divisor;
-        float fraction = (float) truncate * 0.10F;
-        return fraction;
+        return (float) truncate * 0.10F;
     }
 
     @Override

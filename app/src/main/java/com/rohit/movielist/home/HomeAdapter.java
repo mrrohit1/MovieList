@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.rohit.movielist.R;
+import com.rohit.movielist.constant.Constants;
 import com.rohit.movielist.datasource.model.Result;
 import com.rohit.movielist.utils.DateUtils;
 
@@ -54,7 +55,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.HomeViewHolder
             holder.textViewMovieRating.setText(String.valueOf(result.getVoteAverage()));
         }
         if (!TextUtils.isEmpty(result.getPosterPath())) {
-            String imageUrl = "https://image.tmdb.org/t/p/w300_and_h450_bestv2" + result.getPosterPath();
+            String imageUrl = Constants.UrlConstant.IMAGE_BASE_URL.concat(result.getPosterPath());
             Glide.with(holder.itemView.getContext()).load(imageUrl).into(holder.imageViewMoviePoster);
         }
         if (!TextUtils.isEmpty(result.getReleaseDate())) {

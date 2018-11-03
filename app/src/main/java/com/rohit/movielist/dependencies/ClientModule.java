@@ -1,5 +1,6 @@
 package com.rohit.movielist.dependencies;
 
+import com.rohit.movielist.constant.Constants;
 import com.rohit.movielist.datasource.repository.TmdbClient;
 
 import dagger.Module;
@@ -16,7 +17,7 @@ public class ClientModule {
         return new Retrofit.Builder()
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(okHttpClient)
-                .baseUrl("https://api.themoviedb.org")
+                .baseUrl(Constants.UrlConstant.BASE_URL)
                 .build();
     }
 
